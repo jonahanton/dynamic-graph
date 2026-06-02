@@ -29,7 +29,12 @@ tail:
 
 # Local Langfuse stack (headless-provisioned keys; see deploy/langfuse/.env).
 langfuse-up:
-	cd $(LANGFUSE_DIR) && docker compose up -d
+	@port=3800; \
+	while lsof -i :$$port -sTCP:LISTEN 2>/dev/null | grep -q LISTEN; do \
+		port=$$((port + 1)); \
+	done; \
+	echo "Starting Langfuse on http://localhost:$$port"; \
+	cd $(LANGFUSE_DIR) && LANGFUSE_PORT=$$port NEXTAUTH_URL=http://localhost:$$port docker compose up -d
 
 langfuse-down:
 	cd $(LANGFUSE_DIR) && docker compose down
